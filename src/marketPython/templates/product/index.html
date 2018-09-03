@@ -1,0 +1,24 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Products{% endblock %}</h1>
+{% if g.user %}
+<a class="action" href="{{ url_for('product.createProduct') }}">New Product</a>
+{% endif %} {% endblock %} {% block content %}
+<article class="product">
+  <table border=1>
+    <th>Name</th>
+    <th>Description</th>
+    <th>Price</th>
+    <th>Client</th>
+    {% for product in products %}
+    <tr>
+      <td>
+        <a class="action" href="{{ url_for('product.updateProduct', id=product['id']) }}">{{ product['product_name'] }}</a>
+      </td>
+      <td>{{ product['product_desc'] }} </td>
+      <td>{{ product['product_price'] }}</td>
+      <td><a class="action" href="{{ url_for('client.updateClient', id=product['client_id']) }}">{{ product['client_id'] }}</a></td>
+    </tr>
+    {% endfor %}
+  </table>
+</article>
+{% endblock %}

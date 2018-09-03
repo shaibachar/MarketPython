@@ -1,0 +1,17 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Edit client Id: {{ client['id'] }} {% endblock %}</h1>
+{% endblock %} {% block content %}
+<form method="post">
+  <label for="client_name">Name</label>
+  <input name="client_name" id="client_name" value="{{ request.form['client_name'] or client['client_name'] }}" required>
+  <label for="client_phone">Phone</label>
+  <input name="client_phone" id="client_phone" value="{{ request.form['client_phone'] or client['client_phone'] }}" required>
+  <label for="client_email">Email</label>
+  <input name="client_email" id="client_email" value="{{ request.form['client_email'] or client['client_email'] }}" required>
+  <input type="submit" value="Save">
+</form>
+<hr>
+<form action="{{ url_for('client.deleteClient', id=client['id']) }}" method="post">
+  <input class="danger" type="submit" value="Delete" onclick="return confirm('Are you sure?');">
+</form>
+{% endblock %}

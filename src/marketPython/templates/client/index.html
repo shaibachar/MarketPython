@@ -1,0 +1,22 @@
+{% extends 'base.html' %} {% block header %}
+<h1>{% block title %}Clients{% endblock %}</h1>
+{% if g.user %}
+<a class="action" href="{{ url_for('client.createClient') }}">New Client</a>
+{% endif %} {% endblock %} {% block content %}
+<article class="client">
+  <table border=1>
+    <th>Name</th>
+    <th>Phone</th>
+    <th>Email</th>
+    {% for client in clients %}
+    <tr>
+      <td>
+        <a class="action" href="{{ url_for('client.updateClient', id=client['id']) }}">{{ client['client_name'] }}</a>
+      </td>
+      <td>{{ client['client_phone'] }} </td>
+      <td>{{ client['client_email'] }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</article>
+{% endblock %}
