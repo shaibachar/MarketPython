@@ -1,1 +1,10 @@
-Flask==1.0.2
+flask
+setuptools
+NumPy
+python-dateutil
+pytz
+pandas
+pymongo
+scipy
+html5lib
+gunicorn

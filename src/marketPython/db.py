@@ -1,42 +1,89 @@
-import sqlite3
-import click
-from flask import current_app, g
-from flask.cli import with_appcontext
+import sys
+import datetime
+from pymongo import MongoClient
+from pprint import pprint
+from datetime import datetime
 
+class Db(object):
+    # TODO: export the url and db name to configuration class
+    def __init__(self):
+        client = MongoClient('mongodb://mongodb:27017/marketData')
+        # use marketData database
+        self.db = client.marketData
 
-def init_app(app):
-    app.teardown_appcontext(close_db)
-    app.cli.add_command(init_db_command)
+    def clean_marketData(self):
+        # clean all table
+        self.db.marketData.drop()
 
+    def clean_book(self):
+        # clean all table
+        self.db.book.drop()
 
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        g.db.row_factory = sqlite3.Row
+    def clean_all_documents(self):
+        self.clean_marketData()
+        self.clean_book()
 
-    return g.db
+    def insertTradables(self, tradables):
+        print("going to insert ",len(tradables)," to DB")
+        try:
+            if tradables:
+                toInsert = []
+                for i in range(len(tradables)):
+                    toInsert.append(tradables[i].__dict__)
+                try:
+                    result = self.db.marketData.insert_many(toInsert)
+                except ValueError as v:
+                    print("tradable:",toInsert,v)
+                # update book
 
+                for i in range(len(tradables)):
+                    current_tradable = self.db.book.find_one(
+                        {'tradableId': tradables[i].tradableId})
 
-def close_db(e=None):
-    db = g.pop('db', None)
+                    if current_tradable:
+                        new_tradable_date = datetime.strptime(tradables[i].updated, '%d/%m/%Y')
+                        current_tradable_date = datetime.strptime(current_tradable['updated'], '%d/%m/%Y')
+                        if new_tradable_date > current_tradable_date:
+                            self.db.book.delete_one({'tradableId': tradables[i].tradableId})
+                            self.db.book.insert(tradables[i].__dict__)    
+                        else:
+                            # keep the old tradable
+                            pass
+                    else:
+                        self.db.book.insert(tradables[i].__dict__)
 
-    if db is not None:
-        db.close()
+                return result
+            else:
+                pass
+        except Exception as e:
+            print(e)
 
+    def countMarketDocuments(self):
+        # print count on tasks
+        results = self.db.marketData.find()
+        count = results.count()
+        print("marketData count:", count)
+        return count
 
-def init_db():
-    db = get_db()
+    def countBookDocuments(self):
+        # print count on tasks
+        results = self.db.book.find()
+        count = results.count()
+        print("book count:", count)
+        return count
 
-    with current_app.open_resource('schema.sql') as f:
-        db.executescript(f.read().decode('utf8'))
+    def selectTradableById(self, tradableId):
+        selected = self.db.marketData.find_one({'tradableId': tradableId})
+        return selected
 
+    def selectAllTradables(self):
+        selected = self.db.marketData.find()
+        return selected
 
-@click.command('init-db')
-@with_appcontext
-def init_db_command():
-    """Clear the existing data and create new tables."""
-    init_db()
-    click.echo('Initialized the database.')
+    def getTradableBook(self):
+        selected = self.db.book.find()
+        return selected
+
+    def getTradableIdFromBook(self, tradableId):
+        selected = self.db.book.find({'tradableId': tradableId})
+        return selected

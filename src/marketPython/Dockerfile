@@ -1,8 +1,5 @@
-FROM ubuntu:latest
-RUN apt-get update -y
-RUN apt-get install -y python-pip python-dev build-essential
-COPY . /app
-WORKDIR /app
+FROM python:3.6.3
+ADD . /marketPython
+WORKDIR /marketPython
 RUN pip install -r requirements.txt
-ENV FLASK_APP=app
-CMD [ "python", "-m", "flask", "run", "--host=0.0.0.0" ]
+CMD ["gunicorn", "-w 4", "main:app"]
