@@ -17,6 +17,14 @@ class ReadMarketData(object):
     def __init__(self):
         pass
 
+    def time_decorator(self, func):
+        def wrapper(*args, **kwargs):
+            start = datetime.now()
+            result = func(*args, **kwargs)
+            print("time:", (datetime.now()-start))
+            return result
+        return wrapper
+
     def get_file_realDate(self, filePath):
         with open(filePath, 'r') as infile:
             lines_gen = islice(infile, 3)
@@ -33,6 +41,7 @@ class ReadMarketData(object):
             filePath) if isfile(join(filePath, f))]
         return onlyfiles
 
+    @time_decorator
     def readData(self, filePath):
         try:
             dataDate = self.get_file_realDate(filePath)
